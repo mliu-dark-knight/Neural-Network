@@ -52,14 +52,12 @@ class RBM(object):
 			return {self.Vs:batch, self.learning_rate: learning_rate()}
 
 		def learning_rate():
-			return 1e-2 / (1.0 + step)
+			return 1e-4 / (1.0 + step)
 
 		gradient_ascent = [self.W_gradient_ascent, self.b_gradient_ascent, self.c_gradient_ascent]
 		self.tf_session.run(gradient_ascent, feed_dict=feed())
 
-
-
-	def contrastive_divergence(self, k=1000):
+	def contrastive_divergence(self, k=100):
 		V = tf.constant(np.random.randint(2, size=(1, self.v_dimension)).astype(np.float32))
 		for i in range(k):
 			H = self.v_to_h(V)
@@ -148,7 +146,7 @@ def main():
 	test_X, test_Y = read(testX_file, testY_file)
 	test_X = to_binary(test_X)
 
-	# problem1(train_X, train_Y, test_X, test_Y)
+	problem1(train_X, train_Y, test_X, test_Y)
 	problem2(train_X, train_Y, test_X, test_Y)
 	problem3(train_X, train_Y, test_X, test_Y)
 	problem4(train_X, train_Y, test_X, test_Y)
