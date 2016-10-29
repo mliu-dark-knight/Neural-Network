@@ -90,7 +90,7 @@ def read(fname_img, fname_lbl):
 	return img, lbl
 
 
-def test(train_X, train_Y, test_X, test_Y, iter=5):
+def test(train_X, train_Y, test_X, test_Y, iter=10):
 	logreg = LogisticRegression(max_iter=iter)
 	logreg.fit(train_X, train_Y)
 
