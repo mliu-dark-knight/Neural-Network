@@ -24,19 +24,19 @@ class NeuralNetwork(object):
 			batch_idx = np.random.permutation(range(len(train_X)))[:batch_size]
 			batch_X, batch_Y = train_X[batch_idx], train_Y[batch_idx]
 			gradients = self.back_propagation(batch_X, batch_Y)
-			self.update(gradients, i)
+			self.update(gradients, i, batch_size)
 
 			if i % report_iteration == 0:
 				print self.test(train_X, train_Y)
 		print self.time / iteration
 
-	def update(self, gradients, step):
+	def update(self, gradients, step, batch_size):
 		assert len(self.weights) == len(gradients)
 		for i in xrange(len(gradients)):
-			self.weights[i] -= self.learning_rate(step) * gradients[i]
+			self.weights[i] -= self.learning_rate(step) * gradients[i] / batch_size
 
 	def learning_rate(self, step):
-		return 1e-2 / (1 + step * 1e-4)
+		return 1e-1 / (1 + step * 1e-4)
 
 	def back_propagation(self, batch_X, batch_Y):
 		assert len(batch_X) == len(batch_Y)
