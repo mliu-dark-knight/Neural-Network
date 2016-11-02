@@ -11,7 +11,7 @@ class RBM(object):
 		self.b = np.random.rand(self.v_dimension) * 2.0 - 1.0 #(784,)
 		self.c = np.random.rand(self.h_dimension) * 2.0 - 1.0 #(200,)
 	
-	def fit(self, Vs, iter=1, batch_size=10):
+	def fit(self, Vs, iter=1000, batch_size=10):
 		self.Hs = np.random.randint(2, size=(len(Vs), self.h_dimension))
 		for i in range(iter):	
 			sample = Vs[np.random.permutation(range(len(Vs)))[:batch_size]] #Vs = (10,784)
@@ -72,6 +72,8 @@ class RBM(object):
 		W = self.W.T.reshape(200,28,28)
 		print(W[0])
 		print(W[0].shape)
+		plt.matshow(W[0],cmap=plt.cm.gray)
+		plt.savefig('filter.png')
 
 
 
