@@ -3,19 +3,20 @@ import struct
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-from sklearn.neural_network import BernoulliRBM
 from sklearn.decomposition import PCA
 
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+import itertools
 
-trainX_file = "mnist/train-images.idx3-ubyte"
-trainY_file = "mnist/train-labels.idx1-ubyte"
-testX_file = "mnist/t10k-images.idx3-ubyte"
-testY_file = "mnist/t10k-labels.idx1-ubyte"
 
-
+from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
 import tensorflow as tf
-
+#Load MNIST data set
+mnist = input_data.read_data_sets("mnist/")
 
 class RBM(object):
 	def __init__(self, v_dimension, h_dimension):
@@ -73,37 +74,21 @@ class RBM(object):
 	def transform(self, Vs):
 		return self.v_to_h(Vs.astype(np.float32)).eval(session=self.tf_session)
 
-
-
-
-def read(fname_img, fname_lbl):
-	with open(fname_lbl, 'rb') as flbl:
-		magic, num = struct.unpack(">II", flbl.read(8))
-		lbl = np.fromfile(flbl, dtype=np.int8)
-	flbl.close()
-
-	with open(fname_img, 'rb') as fimg:
-		magic, num, rows, cols = struct.unpack(">IIII", fimg.read(16))
-		img = np.fromfile(fimg, dtype=np.uint8).reshape(len(lbl), rows, cols)
-	fimg.close()
-
-	return img, lbl
-
-
-def test(train_X, train_Y, test_X, test_Y, iter=10):
+def test(train_X, train_Y, test_X, test_Y, iter=10,num='1'):
 	logreg = LogisticRegression(max_iter=iter)
 	logreg.fit(train_X, train_Y)
 
-	predict_Y = logreg.predict(train_X)
+	predict_Y_train = logreg.predict(train_X)
 	print("Accuracy on training data")
-	print(accuracy_score(train_Y, predict_Y))
-	predict_Y = logreg.predict(test_X)
+	print(accuracy_score(train_Y, predict_Y_train))
+	predict_Y_test = logreg.predict(test_X)
 	print("Accuracy on test data")
-	print(accuracy_score(test_Y, predict_Y))
+	print(accuracy_score(test_Y, predict_Y_test))
+	print_CM(predict_Y_train,train_Y,predict_Y_test,test_Y,num)
 
 
 def problem1(train_X, train_Y, test_X, test_Y):
-	test(train_X, train_Y, test_X, test_Y, iter=10)
+	test(train_X, train_Y, test_X, test_Y, iter=10,num='1')
 
 
 def problem2(train_X, train_Y, test_X, test_Y):
@@ -111,7 +96,7 @@ def problem2(train_X, train_Y, test_X, test_Y):
 	rbm.fit(train_X)
 	train_X = rbm.transform(train_X)
 	test_X = rbm.transform(test_X)
-	test(train_X, train_Y, test_X, test_Y)
+	test(train_X, train_Y, test_X, test_Y,num='2')
 
 
 def problem3(train_X, train_Y, test_X, test_Y):
@@ -119,7 +104,7 @@ def problem3(train_X, train_Y, test_X, test_Y):
 	pca.fit(train_X)
 	train_X = pca.transform(train_X)
 	test_X = pca.transform(test_X)
-	test(train_X, train_Y, test_X, test_Y)
+	test(train_X, train_Y, test_X, test_Y,num='3')
 
 def problem4(train_X, train_Y, test_X, test_Y):
 	rbm1 = RBM(v_dimension=28 * 28, h_dimension=500)
@@ -130,7 +115,7 @@ def problem4(train_X, train_Y, test_X, test_Y):
 	train_X = rbm2.transform(train_X)
 
 	test_X = rbm2.transform(rbm1.transform(test_X))
-	test(train_X, train_Y, test_X, test_Y)
+	test(train_X, train_Y, test_X, test_Y,num='4')
 
 
 def to_binary(X):
@@ -138,13 +123,57 @@ def to_binary(X):
 	X[X > 0] = 1
 	return X
 
+def print_CM(train_predictions,train_labels,test_predictions,test_labels,title):
+	"""Creates confusion matrix for training and test"""
 
+	cm = confusion_matrix(train_labels,train_predictions)
+	cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+	plt.figure()
+	plt.imshow(cm,interpolation='nearest',cmap=plt.cm.Blues)
+	plt.title("Training Confusion Matrix "+title)
+	plt.colorbar()
+	thresh = cm.max()/2.
+	for i,j in itertools.product(range(10), range(10)):
+		plt.text(j,i,round(cm[i,j],2),horizontalalignment="center",color="white" if cm[i,j]>thresh else "black")
+
+	plt.tight_layout()
+	plt.ylabel('True label')
+	plt.xlabel('Predicted label')   	
+	# plt.savefig('best_train_cm.png')
+	plt.savefig('train_'+title+'.png')
+	plt.close()
+
+	# cm = confusion_matrix(targets.eval(feed_dict={y_:test_labels}),results.eval(feed_dict={x:test_data}))
+	cm = confusion_matrix(test_labels,test_predictions)
+	cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+	# print(cm_normalized)
+
+	plt.figure()
+	plt.imshow(cm,interpolation='nearest',cmap=plt.cm.Blues)
+	plt.title("Testing Confusion Matrix "+title)
+	plt.colorbar()
+	thresh = cm.max()/2.
+	for i,j in itertools.product(range(10), range(10)):
+		plt.text(j,i,round(cm[i,j],2),horizontalalignment="center",color="white" if cm[i,j]>thresh else "black")
+
+	plt.tight_layout()
+	plt.ylabel('True label')
+	plt.xlabel('Predicted label')   	
+	# plt.savefig('best_test_cm.png')
+	plt.savefig('test_'+title+'.png')
+	plt.close()
 
 def main():
-	train_X, train_Y = read(trainX_file, trainY_file)
+	train_X = mnist.train.images
 	train_X = to_binary(train_X)
-	test_X, test_Y = read(testX_file, testY_file)
+	print(train_X.shape)
+	train_Y = mnist.train.labels
+	print(train_Y.shape)
+	test_X = mnist.test.images
 	test_X = to_binary(test_X)
+	test_Y = mnist.test.labels
+
 
 	problem1(train_X, train_Y, test_X, test_Y)
 	problem2(train_X, train_Y, test_X, test_Y)
