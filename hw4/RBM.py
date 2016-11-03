@@ -22,7 +22,7 @@ class RBM(object):
 			self.c += (learning_rate * dc / batch_size)
 
 	def learning_rate(self, step):
-		return 1e-1 / (1.0 + step * 1e-2)
+		return 1e-1 / (1.0 + step * 1e-4)
 
 	def gradient(self, Vs):
 		dWs = np.zeros(self.W.shape)

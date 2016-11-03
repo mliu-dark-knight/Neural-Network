@@ -112,7 +112,7 @@ def problem1(train_X, train_Y, test_X, test_Y):
 
 
 def problem2(train_X, train_Y, test_X, test_Y):
-	rbm = RBM(v_dimension=28 * 28, h_dimension=500)
+	rbm = RBM(v_dimension=28 * 28, h_dimension=200)
 	rbm.fit(train_X)
 	rbm.get_filters()
 	train_X = rbm.transform(train_X)
@@ -127,20 +127,23 @@ def problem3(train_X, train_Y, test_X, test_Y):
 	test_X = pca.transform(test_X)
 	test(train_X, train_Y, test_X, test_Y, num='3')
 
+def sample_bernoulli(X):
+	random = np.random.rand(X.shape)
+	return np.less(random, X).astype(int)
+
 def problem4(train_X, train_Y, test_X, test_Y):
 	rbm1 = RBM(v_dimension=28 * 28, h_dimension=500)
 	rbm1.fit(train_X)
-	train_X = rbm1.transform(train_X)
+	train_X = sample_bernoulli(rbm1.transform(train_X))
 	rbm2 = RBM(v_dimension=500, h_dimension=200)
 	rbm2.fit(train_X)
 	train_X = rbm2.transform(train_X)
 
-	test_X = rbm2.transform(rbm1.transform(test_X))
+	test_X = rbm2.transform(sample_bernoulli(rbm1.transform(test_X)))
 	test(train_X, train_Y, test_X, test_Y, num='4')
 
 
 def to_binary(X):
-	X = X.reshape((-1, 28 * 28))
 	X[X > 0] = 1
 	return X
 
@@ -148,15 +151,15 @@ def print_CM(train_predictions, train_labels, test_predictions, test_labels, tit
 	"""Creates confusion matrix for training and test"""
 
 	cm = confusion_matrix(train_labels, train_predictions)
-	cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+	cm = cm.astype('float')
 
 	plt.figure()
-	plt.imshow(cm,interpolation='nearest',cmap=plt.cm.Blues)
-	plt.title("Training Confusion Matrix "+title)
+	plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+	plt.title("Training Confusion Matrix " + title)
 	plt.colorbar()
-	thresh = cm.max()/2.
+	thresh = cm.max() / 2.
 	for i,j in itertools.product(range(10), range(10)):
-		plt.text(j, i, round(cm[i,j],2), horizontalalignment="center", color="white" if cm[i,j]>thresh else "black")
+		plt.text(j, i, round(cm[i, j], 2), horizontalalignment="center", color="white" if cm[i,j] > thresh else "black")
 
 	plt.tight_layout()
 	plt.ylabel('True label')
@@ -166,17 +169,17 @@ def print_CM(train_predictions, train_labels, test_predictions, test_labels, tit
 	plt.close()
 
 	# cm = confusion_matrix(targets.eval(feed_dict={y_:test_labels}), results.eval(feed_dict={x:test_data}))
-	cm = confusion_matrix(test_labels,test_predictions)
+	cm = confusion_matrix(test_labels, test_predictions)
 	cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 	# print(cm_normalized)
 
 	plt.figure()
-	plt.imshow(cm,interpolation='nearest',cmap=plt.cm.Blues)
+	plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
 	plt.title("Testing Confusion Matrix "+title)
 	plt.colorbar()
-	thresh = cm.max()/2.
+	thresh = cm.max() / 2.
 	for i,j in itertools.product(range(10), range(10)):
-		plt.text(j, i, round(cm[i, j], 2), horizontalalignment="center", color="white" if cm[i,j]>thresh else "black")
+		plt.text(j, i, round(cm[i, j], 2), horizontalalignment="center", color="white" if cm[i, j] > thresh else "black")
 
 	plt.tight_layout()
 	plt.ylabel('True label')
@@ -199,7 +202,7 @@ def main():
 	# problem1(train_X, train_Y, test_X, test_Y)
 	problem2(train_X, train_Y, test_X, test_Y)
 	# problem3(train_X, train_Y, test_X, test_Y)
-	# problem4(train_X, train_Y, test_X, test_Y)
+	problem4(train_X, train_Y, test_X, test_Y)
 
 main()
 

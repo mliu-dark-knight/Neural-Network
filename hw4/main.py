@@ -35,13 +35,6 @@ def test_RBM(train_X, train_Y, test_X, test_Y):
 def to_binary(X):
     """Returns a binary version of the input image"""
     X[X > 0] = 1
-
-    # choices = np.random.choice(len(X), 16)
-    # for i in range(len(choices)):
-    #     plt.matshow(X[choices[i]].reshape(28, 28), cmap=plt.cm.gray)
-    #     plt.savefig('raw%d.png' % i)
-    #     plt.close()
-
     return X
 
 
