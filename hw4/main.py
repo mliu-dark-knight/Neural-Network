@@ -49,7 +49,7 @@ def main():
     # Extract data
     train_X = mnist.train.images
     train_X = to_binary(train_X)
-    show_mnist(train_X)
+    # show_mnist(train_X)
     train_Y = mnist.train.labels
 
     test_X = mnist.test.images
@@ -57,7 +57,7 @@ def main():
     test_Y = mnist.test.labels
 
     # Train and test RBM
-    # test_RBM(train_X, train_Y, test_X, test_Y)
+    test_RBM(train_X, train_Y, test_X, test_Y)
     
 
 main()

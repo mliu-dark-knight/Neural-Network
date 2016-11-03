@@ -13,7 +13,7 @@ import itertools
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-#Load MNIST data set
+# Load MNIST data set
 mnist = input_data.read_data_sets("mnist/")
 
 class RBM(object):
@@ -21,7 +21,7 @@ class RBM(object):
 		self.v_dimension = v_dimension
 		self.h_dimension = h_dimension
 
-	def fit(self, Vs, iter=100, batch_size=100):
+	def fit(self, Vs, iter=2000, batch_size=100):
 		self.Vs = Vs
 		self.batch_size = batch_size
 		self.build(Vs, batch_size)
@@ -52,7 +52,7 @@ class RBM(object):
 			return {self.tf_Vs:batch, self.learning_rate: learning_rate()}
 
 		def learning_rate():
-			return 1e-1 / (1.0 + step * 1e-2)
+			return 1e-1 / (1.0 + step * 1e-4)
 
 		gradient_ascent = [self.W_gradient_ascent, self.b_gradient_ascent, self.c_gradient_ascent]
 		self.tf_session.run(gradient_ascent, feed_dict=feed())
@@ -117,7 +117,7 @@ def problem3(train_X, train_Y, test_X, test_Y):
 	test(train_X, train_Y, test_X, test_Y, num='3')
 
 def sample_bernoulli(X):
-	random = np.random.rand(X.shape)
+	random = np.random.rand(X.shape[0], X.shape[1])
 	return np.less(random, X).astype(int)
 
 def problem4(train_X, train_Y, test_X, test_Y):
@@ -159,7 +159,7 @@ def print_CM(train_predictions, train_labels, test_predictions, test_labels, tit
 
 	# cm = confusion_matrix(targets.eval(feed_dict={y_:test_labels}), results.eval(feed_dict={x:test_data}))
 	cm = confusion_matrix(test_labels, test_predictions)
-	cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+	cm = cm.astype('float')
 	# print(cm_normalized)
 
 	plt.figure()
@@ -190,7 +190,7 @@ def main():
 	# problem1(train_X, train_Y, test_X, test_Y)
 	problem2(train_X, train_Y, test_X, test_Y)
 	# problem3(train_X, train_Y, test_X, test_Y)
-	problem4(train_X, train_Y, test_X, test_Y)
+	# problem4(train_X, train_Y, test_X, test_Y)
 
 main()
 

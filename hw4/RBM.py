@@ -7,13 +7,14 @@ class RBM(object):
 	def __init__(self, v_dimension, h_dimension):
 		self.v_dimension = v_dimension # 784
 		self.h_dimension = h_dimension # 200
-		self.W = np.random.rand(self.v_dimension, self.h_dimension) * 2.0 - 1.0 # (784, 200)
-		self.b = np.random.rand(self.v_dimension) * 2.0 - 1.0 # (784,)
-		self.c = np.random.rand(self.h_dimension) * 2.0 - 1.0 # (200,)
+		self.W = np.random.rand(self.v_dimension, self.h_dimension) * 0.2 - 0.1 # (784, 200)
+		self.b = np.random.rand(self.v_dimension) * 0.2 - 0.1 # (784,)
+		self.c = np.random.rand(self.h_dimension) * 0.2 - 0.1 # (200,)
 	
-	def fit(self, Vs, iter=200, batch_size=100):
+	def fit(self, Vs, iter=100, batch_size=100):
 		self.Vs = Vs
-		for i in range(iter):	
+		for i in range(iter):
+			print("Iteration %d" % i)	
 			sample = Vs[np.random.permutation(range(len(Vs)))[:batch_size]] # Vs = (10, 784)
 			dW, db, dc = self.gradient(sample)
 			learning_rate = self.learning_rate(i)
@@ -38,14 +39,14 @@ class RBM(object):
 
 	def gradient_at(self, V):
 		H = self.v_to_h(V)
-		E_V, E_H = self.contrastive_divergence(1)
+		E_V, E_H = self.contrastive_divergence()
 		# Implement gradient quations from CFS
 		dW = np.outer(V, H) - np.outer(E_V, E_H)
 		db = V - E_V
 		dc = H - E_H
 		return dW, db, dc
 
-	def contrastive_divergence(self, k):
+	def contrastive_divergence(self, k=10):
 		V = self.Vs[np.random.randint(len(self.Vs), size=1)[0]]
 		for i in range(k - 1):
 			H = self.v_to_h(V)
