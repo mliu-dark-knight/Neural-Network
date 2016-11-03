@@ -37,11 +37,19 @@ def to_binary(X):
     X[X > 0] = 1
     return X
 
+def show_mnist(X):
+    choices = np.random.choice(len(X), 16)
+    for i in range(len(choices)):
+        plt.matshow(X[choices[i]].reshape(28, 28), cmap=plt.cm.gray)
+        plt.savefig('raw%d.png' % i)
+        plt.close()
+
 
 def main():
     # Extract data
     train_X = mnist.train.images
     train_X = to_binary(train_X)
+    show_mnist(train_X)
     train_Y = mnist.train.labels
 
     test_X = mnist.test.images
@@ -49,7 +57,7 @@ def main():
     test_Y = mnist.test.labels
 
     # Train and test RBM
-    test_RBM(train_X, train_Y, test_X, test_Y)
+    # test_RBM(train_X, train_Y, test_X, test_Y)
     
 
 main()

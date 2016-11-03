@@ -11,7 +11,7 @@ class RBM(object):
 		self.b = np.random.rand(self.v_dimension) * 2.0 - 1.0 # (784,)
 		self.c = np.random.rand(self.h_dimension) * 2.0 - 1.0 # (200,)
 	
-	def fit(self, Vs, iter=100, batch_size=100):
+	def fit(self, Vs, iter=200, batch_size=100):
 		self.Vs = Vs
 		for i in range(iter):	
 			sample = Vs[np.random.permutation(range(len(Vs)))[:batch_size]] # Vs = (10, 784)
