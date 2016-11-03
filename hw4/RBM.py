@@ -7,14 +7,14 @@ class RBM(object):
 	def __init__(self, v_dimension, h_dimension):
 		self.v_dimension = v_dimension # 784
 		self.h_dimension = h_dimension # 200
-		self.W = np.random.rand(self.v_dimension, self.h_dimension) * 2.0 - 1.0 # (784,200)
+		self.W = np.random.rand(self.v_dimension, self.h_dimension) * 2.0 - 1.0 # (784, 200)
 		self.b = np.random.rand(self.v_dimension) * 2.0 - 1.0 # (784,)
 		self.c = np.random.rand(self.h_dimension) * 2.0 - 1.0 # (200,)
 	
-	def fit(self, Vs, iter=10, batch_size=1000):
+	def fit(self, Vs, iter=100, batch_size=100):
 		self.Vs = Vs
 		for i in range(iter):	
-			sample = Vs[np.random.permutation(range(len(Vs)))[:batch_size]] # Vs = (10,784)
+			sample = Vs[np.random.permutation(range(len(Vs)))[:batch_size]] # Vs = (10, 784)
 			dW, db, dc = self.gradient(sample)
 			learning_rate = self.learning_rate(i)
 			self.W += (learning_rate * dW / batch_size)
@@ -22,7 +22,7 @@ class RBM(object):
 			self.c += (learning_rate * dc / batch_size)
 
 	def learning_rate(self, step):
-		return 1e0 / (1.0 + step)
+		return 1e-1 / (1.0 + step * 1e-2)
 
 	def gradient(self, Vs):
 		dWs = np.zeros(self.W.shape)
@@ -69,10 +69,10 @@ class RBM(object):
 		return self.v_to_h(V)
 
 	def get_filters(self):
-		W = self.W.T.reshape(self.h_dimension,28,28)
+		W = self.W.T
 		choices = np.random.choice(self.h_dimension, 64)
 		for i in range(len(choices)):
-			plt.matshow(W[choices[i]], cmap=plt.cm.gray)
+			plt.matshow(W[choices[i]].reshape(28, 28), cmap=plt.cm.gray)
 			plt.savefig('filter%d.png' % i)
 			plt.close()
 

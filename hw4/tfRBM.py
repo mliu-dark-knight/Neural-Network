@@ -23,7 +23,7 @@ class RBM(object):
 		self.v_dimension = v_dimension
 		self.h_dimension = h_dimension
 
-	def fit(self, Vs, iter=10, batch_size=1000):
+	def fit(self, Vs, iter=100, batch_size=100):
 		self.Vs = Vs
 		self.batch_size = batch_size
 		self.build(Vs, batch_size)
@@ -40,7 +40,6 @@ class RBM(object):
 		self.tf_Vs = tf.placeholder(tf.float32, [None, self.v_dimension])
 
 		self.learning_rate = tf.placeholder(tf.float32, shape=[])
-		self.tf_batch_size = tf.constant(np.float32(batch_size))
 
 		Hs = self.v_to_h(self.tf_Vs)
 		E_Vs, E_Hs = self.contrastive_divergence()
@@ -55,12 +54,12 @@ class RBM(object):
 			return {self.tf_Vs:batch, self.learning_rate: learning_rate()}
 
 		def learning_rate():
-			return 1e-1 / (1.0 + step)
+			return 1e-1 / (1.0 + step * 1e-2)
 
 		gradient_ascent = [self.W_gradient_ascent, self.b_gradient_ascent, self.c_gradient_ascent]
 		self.tf_session.run(gradient_ascent, feed_dict=feed())
 
-	def contrastive_divergence(self, k=100):
+	def contrastive_divergence(self, k=10):
 		V = tf.Variable(self.Vs[np.random.choice(len(self.Vs), self.batch_size)].astype(np.float32))
 		for i in range(k - 1):
 			H = self.v_to_h(V)
@@ -78,7 +77,7 @@ class RBM(object):
 		return self.v_to_h(Vs.astype(np.float32)).eval(session=self.tf_session)
 
 	def get_filters(self):
-		W = self.W.eval(session=self.tf_session).T.reshape(self.h_dimension,28,28)
+		W = self.W.eval(session=self.tf_session).T.reshape(self.h_dimension, 28, 28)
 		choices = np.random.choice(self.h_dimension, 64)
 		for i in range(len(choices)):
 			plt.matshow(W[choices[i]], cmap=plt.cm.gray)
@@ -113,7 +112,7 @@ def problem1(train_X, train_Y, test_X, test_Y):
 
 
 def problem2(train_X, train_Y, test_X, test_Y):
-	rbm = RBM(v_dimension=28 * 28, h_dimension=200)
+	rbm = RBM(v_dimension=28 * 28, h_dimension=500)
 	rbm.fit(train_X)
 	rbm.get_filters()
 	train_X = rbm.transform(train_X)
@@ -166,7 +165,7 @@ def print_CM(train_predictions, train_labels, test_predictions, test_labels, tit
 	plt.savefig('train_' + title + '.png')
 	plt.close()
 
-	# cm = confusion_matrix(targets.eval(feed_dict={y_:test_labels}),results.eval(feed_dict={x:test_data}))
+	# cm = confusion_matrix(targets.eval(feed_dict={y_:test_labels}), results.eval(feed_dict={x:test_data}))
 	cm = confusion_matrix(test_labels,test_predictions)
 	cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 	# print(cm_normalized)
