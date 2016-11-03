@@ -2,14 +2,12 @@ import os
 import struct
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.decomposition import PCA
-from sklearn.neural_network import BernoulliRBM
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
 import itertools
 
 import tensorflow as tf
@@ -97,15 +95,6 @@ def test(train_X, train_Y, test_X, test_Y, iter=10, num='1'):
 	print(accuracy_score(test_Y, predict_Y_test))
 	print_CM(predict_Y_train, train_Y, predict_Y_test, test_Y, num)
 
-
-def test_scikit(train_X, train_Y, test_X, test_Y):
-	rbm = BernoulliRBM(n_components=200)
-	rbm.fit(train_X)
-
-	train_X = rbm.transform(train_X)
-	test_X = rbm.transform(test_X)
-
-	test(train_X, train_Y, test_X, test_Y)
 
 def problem1(train_X, train_Y, test_X, test_Y):
 	test(train_X, train_Y, test_X, test_Y, iter=10, num='1')
@@ -197,7 +186,6 @@ def main():
 	test_X = to_binary(test_X)
 	test_Y = mnist.test.labels
 
-	# test_scikit(train_X, train_Y, test_X, test_Y)
 
 	# problem1(train_X, train_Y, test_X, test_Y)
 	problem2(train_X, train_Y, test_X, test_Y)
