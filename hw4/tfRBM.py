@@ -21,7 +21,7 @@ class RBM(object):
 		self.v_dimension = v_dimension
 		self.h_dimension = h_dimension
 
-	def fit(self, Vs, iter=2000, batch_size=100):
+	def fit(self, Vs, iter=1000, batch_size=100):
 		self.Vs = Vs
 		self.batch_size = batch_size
 		self.build(Vs, batch_size)
@@ -103,7 +103,6 @@ def problem1(train_X, train_Y, test_X, test_Y):
 def problem2(train_X, train_Y, test_X, test_Y):
 	rbm = RBM(v_dimension=28 * 28, h_dimension=200)
 	rbm.fit(train_X)
-	rbm.get_filters()
 	train_X = rbm.transform(train_X)
 	test_X = rbm.transform(test_X)
 	test(train_X, train_Y, test_X, test_Y, num='2')
@@ -116,19 +115,15 @@ def problem3(train_X, train_Y, test_X, test_Y):
 	test_X = pca.transform(test_X)
 	test(train_X, train_Y, test_X, test_Y, num='3')
 
-def sample_bernoulli(X):
-	random = np.random.rand(X.shape[0], X.shape[1])
-	return np.less(random, X).astype(int)
-
 def problem4(train_X, train_Y, test_X, test_Y):
 	rbm1 = RBM(v_dimension=28 * 28, h_dimension=500)
 	rbm1.fit(train_X)
-	train_X = sample_bernoulli(rbm1.transform(train_X))
+	train_X = rbm1.transform(train_X)
 	rbm2 = RBM(v_dimension=500, h_dimension=200)
 	rbm2.fit(train_X)
 	train_X = rbm2.transform(train_X)
 
-	test_X = rbm2.transform(sample_bernoulli(rbm1.transform(test_X)))
+	test_X = rbm2.transform(rbm1.transform(test_X))
 	test(train_X, train_Y, test_X, test_Y, num='4')
 
 
@@ -187,10 +182,10 @@ def main():
 	test_Y = mnist.test.labels
 
 
-	# problem1(train_X, train_Y, test_X, test_Y)
+	problem1(train_X, train_Y, test_X, test_Y)
 	problem2(train_X, train_Y, test_X, test_Y)
-	# problem3(train_X, train_Y, test_X, test_Y)
-	# problem4(train_X, train_Y, test_X, test_Y)
+	problem3(train_X, train_Y, test_X, test_Y)
+	problem4(train_X, train_Y, test_X, test_Y)
 
 main()
 
