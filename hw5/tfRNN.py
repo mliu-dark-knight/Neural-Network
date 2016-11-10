@@ -18,7 +18,7 @@ class RNN(object):
 
     def fit(self, iterations=1000, report_iter=10, batch_size=100):
         def learning_rate(step) :
-            return 1e-2 / (1.0 + step)
+            return 1e-2 / (1.0 + step * 1e-2)
 
         self.build()
         self.tf_session = tf.Session()
@@ -33,7 +33,7 @@ class RNN(object):
             self.tf_session.run(self.step, feed_dict={self.X: batch_x, self.Y: batch_y, self.learning_rate: learning_rate(i)})
 
             if i % report_iter == 0:
-                accuracy = self.eval(batch_x, batch_y)
+                accuracy = self.eval(train_X, train_Y)
                 learning_curve.append(accuracy)
                 print("Training accuracy: %f" % accuracy)
         return learning_curve
@@ -41,9 +41,9 @@ class RNN(object):
 
     def build(self):
         if self.lstm:
-            self.cell = rnn_cell.BasicLSTMCell(self.n_unit)
+            self.cell = rnn_cell.BasicLSTMCell(self.n_unit, state_is_tuple=True)
         else:
-            self.cell = rnn_cell.BasicRNNCell(self.n_unit)
+            self.cell = rnn_cell.BasicRNNCell(self.n_unit, state_is_tuple=True)
         self.X = tf.placeholder(tf.float32, [None, self.n_step, self.n_input])
         self.Y = tf.placeholder(tf.float32, [None, self.n_class])
         self.W = tf.Variable(tf.truncated_normal([self.n_unit, self.n_class], stddev=0.1))
@@ -53,7 +53,7 @@ class RNN(object):
         output, state = rnn.rnn(self.cell, rnn_input, dtype=tf.float32)
 
         prediction = tf.matmul(output[-1], self.W) + self.b
-        cross_entropy = tf.reduce_mean(-tf.reduce_sum(self.Y * tf.log(prediction), reduction_indices=[1]))
+        cross_entropy = tf.nn.softmax_cross_entropy_with_logits(prediction, self.Y)
 
         correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(self.Y, 1))
         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
