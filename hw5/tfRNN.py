@@ -16,9 +16,9 @@ class RNN(object):
         self.n_class = n_class
         self.lstm = lstm
 
-    def fit(self, iterations=1000, report_iter=10, batch_size=100):
+    def fit(self, iterations=1000, report_iter=100, batch_size=100):
         def learning_rate(step) :
-            return 1e-2 / (1.0 + step * 1e-2)
+            return 1e-2 / (1.0 + step * 1e-4)
 
         self.build()
         self.tf_session = tf.Session()
@@ -43,7 +43,7 @@ class RNN(object):
         if self.lstm:
             self.cell = rnn_cell.BasicLSTMCell(self.n_unit, state_is_tuple=True)
         else:
-            self.cell = rnn_cell.BasicRNNCell(self.n_unit, state_is_tuple=True)
+            self.cell = rnn_cell.BasicRNNCell(self.n_unit)
         self.X = tf.placeholder(tf.float32, [None, self.n_step, self.n_input])
         self.Y = tf.placeholder(tf.float32, [None, self.n_class])
         self.W = tf.Variable(tf.truncated_normal([self.n_unit, self.n_class], stddev=0.1))
@@ -75,9 +75,9 @@ def main():
     # rnn.fit()
     # rnn.test()
 
-    # rnn = RNN(lstm=False, n_step=28, n_input=28)
-    # rnn.fit()
-    # rnn.test()
+    rnn = RNN(lstm=False, n_step=28, n_input=28)
+    rnn.fit()
+    rnn.test()
 
     # rnn = RNN(lstm=True, n_step=784, n_input=1)
     # rnn.fit()
