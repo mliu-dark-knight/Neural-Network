@@ -1,6 +1,9 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.ops import rnn, rnn_cell
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -43,7 +46,8 @@ class RNN(object):
         if self.lstm:
             self.cell = rnn_cell.BasicLSTMCell(self.n_unit, state_is_tuple=True)
         else:
-            self.cell = rnn_cell.BasicRNNCell(self.n_unit, state_is_tuple=True)
+            # self.cell = rnn_cell.BasicRNNCell(self.n_unit, state_is_tuple=True)
+            self.cell = rnn_cell.BasicRNNCell(self.n_unit)
         self.X = tf.placeholder(tf.float32, [None, self.n_step, self.n_input])
         self.Y = tf.placeholder(tf.float32, [None, self.n_class])
         self.W = tf.Variable(tf.truncated_normal([self.n_unit, self.n_class], stddev=0.1))
@@ -69,11 +73,19 @@ class RNN(object):
         print("Testing accuracy: %f" % self.eval(test_X, test_Y))
 
 
+def plot_convergence(curve,filename):
+    plt.plot(curve)
+    plt.title(filename+' Accuracy Convergence')
+    plt.xlabel('Training Iteration')
+    plt.ylabel('Training Corpus Accuracy')
+    plt.savefig(filename+'.png')  
+    plt.close()
 
 def main():
     # rnn = RNN(lstm=False, n_step=784, n_input=1)
-    # rnn.fit()
+    # curve = rnn.fit()
     # rnn.test()
+
 
     # rnn = RNN(lstm=False, n_step=28, n_input=28)
     # rnn.fit()
@@ -84,8 +96,9 @@ def main():
     # rnn.test()
 
     rnn = RNN(lstm=True, n_step=28, n_input=28)
-    rnn.fit()
+    curve = rnn.fit()
     rnn.test()
+    plot_convergence(curve,'lstm_28_28')
 
 
 main()
