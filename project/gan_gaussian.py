@@ -19,18 +19,13 @@ K = 1 				#Number of steps to apply to discriminator
 M = 10				#Minibatch size
 
 
-
-#Target distribution to learn
-# plt.plot(bins,norm.pdf(bins,loc=MU,scale=SIGMA))
-# plt.savefig('normal.png')
-
 def sampleData(n):
 	"""
 	Sample the data distribution.
 	"""
 	return np.sort(np.random.normal(MU,SIGMA,n))
 
-#Generator 
+
 def sampleGen(n):
 	"""
 	Sample the generator (noise) distribution using stratified sampling.
@@ -39,8 +34,6 @@ def sampleGen(n):
 	return np.linspace(-RANGE,RANGE,n) + perturb*SCALE
 
 
-
-#Discriminator 
 class GAN():
 	def __init__(self):
 		pass
@@ -106,7 +99,9 @@ class GAN():
 			self.sess.run(self.optimizer_g,{self.g_input:np.reshape(z,(M,1))})
 
 	def plot_fig(self):
-		
+	"""
+	Plotting code taken from Eric Jang's implementation with modifications.
+	"""		
 	    # plots pg, pdata, decision boundary 
 	    f,ax=plt.subplots(1)
 	    # p_data
@@ -140,8 +135,6 @@ class GAN():
 
 	def test(self):
 		self.plot_fig()
-
-
 
 
 def main():
