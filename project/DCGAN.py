@@ -1,13 +1,14 @@
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 
 class DCGAN(object):
 	def __init__(self, image_height=28, image_width=28, image_color=1, batch_size=100, 
 				 g_kernel_size=4, g_channel_1=4, g_channel_2=8, g_channel_3=4,
 				 d_kernel_size=4, d_channel_1=4, d_channel_2=8, d_channel_3=16, d_channel_4=32,
-				 flatten_dim=128, hidden_dim=64, Lambda=0.0):
+				 flatten_dim=128, hidden_dim=64, Lambda=0.1):
 
 		self.batch_size = batch_size
 		self.image_height = image_height
@@ -33,14 +34,14 @@ class DCGAN(object):
 	def weight_variable(self, shape, name=None, reuse=False):
 		if reuse:
 			with tf.variable_scope('', reuse=True):
-				return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=0.0, stddev=0.1))
-		return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=0.0, stddev=0.1))
+				return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=0.0, stddev=1e-1))
+		return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=0.0, stddev=1e-1))
 
 	def bias_variable(self, shape, name=None, reuse=False):
 		if reuse:
 			with tf.variable_scope('', reuse=True):
-				return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=0.1, stddev=0.1))
-		return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=0.1, stddev=0.1))
+				return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=1e-1, stddev=1e-1))
+		return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=1e-1, stddev=1e-1))
 
 
 	def build_model(self):
@@ -56,9 +57,8 @@ class DCGAN(object):
 		self.d_loss = self.d_loss_real + self.d_loss_generated
 
 		self.g_loss_perceptual = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.D_generated, tf.one_hot(indices=np.ones(self.batch_size).astype(int), depth=2, on_value=1.0, off_value=0.0)))
-		self.g_loss_contextual = tf.reduce_sum(tf.contrib.layers.flatten(tf.abs(self.generated_images - self.real_images)))
-		# input size invariant contextual loss
-		self.g_loss = self.g_loss_contextual / (self.image_height * self.image_width) + self.Lambda * self.g_loss_perceptual
+		self.g_loss_contextual = tf.reduce_sum(tf.contrib.layers.flatten(tf.abs(self.generated_images - self.real_images))) / (self.image_height * self.image_width * self.image_color)
+		self.g_loss = self.g_loss_contextual + self.Lambda * self.g_loss_perceptual
 
 		self.d_variables = [variable for variable in tf.trainable_variables() if variable.name.startswith('d_')]
 		self.g_variables = [variable for variable in tf.trainable_variables() if variable.name.startswith('g_')]
@@ -74,9 +74,9 @@ class DCGAN(object):
 
 		# check_scope()
 
-	def train(self, real_images, blurred_images, iteration=1000, report_iter=1):
+	def train(self, real_images, blurred_images, K=1, iteration=1000, report_iter=100):
 		def learning_rate(step):
-			return 1e-4 / (1 + step * 1e-4)
+			return 1e-6 / (1 + step * 1e-4)
 
 		self.tf_session = tf.Session()
 		self.tf_session.run(tf.initialize_all_variables())
@@ -84,19 +84,24 @@ class DCGAN(object):
 		for i in range(iteration):
 			batch_idx = np.random.choice(len(real_images), self.batch_size, replace=False)
 			batch_real_images, batch_blurred_images = real_images[batch_idx], blurred_images[batch_idx]
-			# self.tf_session.run(self.d_gradient_descent, feed_dict={self.real_images: batch_real_images, self.blurred_images: batch_blurred_images, self.learning_rate: learning_rate(i)})
+			for k in range(K):
+				self.tf_session.run(self.d_gradient_descent, feed_dict={self.real_images: batch_real_images, self.blurred_images: batch_blurred_images, self.learning_rate: learning_rate(i)})
 			self.tf_session.run(self.g_gradient_descent, feed_dict={self.real_images: batch_real_images, self.blurred_images: batch_blurred_images, self.learning_rate: learning_rate(i)})
 
 			if i % report_iter == 0:
 				g_loss_contextual = self.tf_session.run(self.g_loss_contextual, feed_dict={self.real_images: real_images, self.blurred_images: blurred_images})
 				print('generator contextual loss: %f' % (g_loss_contextual / len(real_images)))
 
-				self.show_generated_image(blurred_images[np.random.randint(len(blurred_images), size=1)])
+				# self.show_generated_image(blurred_images[np.random.randint(len(blurred_images), size=1)])
 
 	def show_generated_image(self, blurred_images):
 		generated_images = self.tf_session.run(self.generated_images, feed_dict={self.blurred_images: blurred_images})
 		for generated_image in generated_images:
-			plt.matshow(np.squeeze(generated_image), cmap=plt.cm.gray)
+			print(generated_image)
+			if self.image_color == 1:
+				plt.matshow(np.squeeze(generated_image), cmap=plt.cm.gray)
+			else:
+				plt.imshow(generated_image)
 			plt.show()
 
 	def print_variables(self, names=None):
@@ -132,6 +137,7 @@ class DCGAN(object):
 		h_6 = tf.matmul(h_5, W_6) + d_6
 
 		return h_6
+
 
 	def generator(self, images):
 		W_1 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.image_color, self.g_channel_1], name='g_w1')
