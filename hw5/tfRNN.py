@@ -21,7 +21,7 @@ class RNN(object):
 
     def fit(self, iterations=1000, report_iter=100, batch_size=100):
         def learning_rate(step) :
-            return 1e-1 / (1.0 + step * 1e-4)
+            return 1e-2 / (1.0 + step * 1e-4)
 
         self.build()
         self.tf_session = tf.Session()
@@ -96,10 +96,10 @@ def main():
     # rnn.fit()
     # rnn.test()
 
-    # rnn = RNN(lstm=True, n_step=28, n_input=28)
-    # curve = rnn.fit()
-    # rnn.test()
-    # plot_convergence(curve,'lstm_28_28')
+    rnn = RNN(lstm=True, n_step=28, n_input=28)
+    curve = rnn.fit()
+    rnn.test()
+    plot_convergence(curve,'lstm_28_28')
 
 
 main()
