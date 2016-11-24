@@ -104,16 +104,21 @@ class DCGAN(object):
 				print('generator contextual loss: %f' % (g_loss_contextual / self.batch_size))
 
 			if i % visualize_iter == 0:
-				self.show_generated_image(blurred_images[np.random.randint(len(blurred_images), size=1)])
+				show_idx = np.random.randint(len(blurred_images), size=1)
+				self.show_generated_image(real_images[show_idx], blurred_images[show_idx])
 		self.show_generated_image(blurred_images[np.random.randint(len(blurred_images), size=1)])
 
-	def show_generated_image(self, blurred_images):
+	def show_generated_image(self, real_images, blurred_images):
 		generated_images = self.tf_session.run(self.generated_images, feed_dict={self.blurred_images: blurred_images})
-		for generated_image in generated_images:
+		for i in range(len(generated_images)):
 			if self.image_color == 1:
-				plt.matshow(np.squeeze(generated_image), cmap=plt.cm.gray)
+				plt.matshow(np.squeeze(real_images[i]), cmap=plt.cm.gray)
+				plt.matshow(np.squeeze(blurred_images[i]), cmap=plt.cm.gray)
+				plt.matshow(np.squeeze(generated_images[i]), cmap=plt.cm.gray)
 			else:
-				plt.imshow(generated_image)
+				plt.imshow(real_images[i])
+				plt.imshow(blurred_images[i])
+				plt.imshow(generated_images[i])
 			plt.show()
 
 	def print_variables(self, names=None):

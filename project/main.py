@@ -8,7 +8,7 @@ def mnist():
 	mnist = input_data.read_data_sets("mnist/")
 	real_images = mnist.train.images.reshape(-1, 28, 28, 1)
 	blurred_images = np.array([blur(image) for image in real_images])
-	gan = DCGAN()
+	gan = DCGAN(Lambda=1e1)
 	gan.train(real_images, blurred_images, K=10)
 
 def CelebA():
