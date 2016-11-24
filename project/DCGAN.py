@@ -8,7 +8,7 @@ class DCGAN(object):
 	def __init__(self, image_height=28, image_width=28, image_color=1, batch_size=100, 
 				 g_kernel_size=4, g_channel_1=4, g_channel_2=8, g_channel_3=4,
 				 d_kernel_size=4, d_channel_1=4, d_channel_2=8, d_channel_3=16, d_channel_4=32,
-				 flatten_dim=128, hidden_dim=64, Lambda=1e1):
+				 flatten_dim=128, hidden_dim=64, Lambda=1e1, contextual='L1'):
 
 		self.batch_size = batch_size
 		self.image_height = image_height
@@ -28,6 +28,8 @@ class DCGAN(object):
 		self.d_channel_2 = d_channel_2
 		self.d_channel_3 = d_channel_3
 		self.d_channel_4 = d_channel_4
+
+		self.contextual = contextual
 
 		self.build_model()
 
@@ -57,7 +59,14 @@ class DCGAN(object):
 		self.d_loss = self.d_loss_real + self.d_loss_generated
 
 		self.g_loss_perceptual = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.D_generated, tf.one_hot(indices=np.ones(self.batch_size).astype(int), depth=2, on_value=1.0, off_value=0.0)))
-		self.g_loss_contextual = tf.reduce_sum(tf.contrib.layers.flatten(tf.abs(self.generated_images - self.real_images))) / (self.image_height * self.image_width * self.image_color)
+		
+		if self.contextual == 'L1':
+			self.g_loss_contextual = tf.reduce_sum(tf.contrib.layers.flatten(tf.abs(self.generated_images - self.real_images))) / (self.image_height * self.image_width * self.image_color)
+		elif self.contextual == 'L2':
+			self.g_loss_contextual = tf.reduce_sum(tf.contrib.layers.flatten(tf.squared_difference(self.generated_images, self.real_images))) / (self.image_height * self.image_width * self.image_color)
+		else:
+			raise ValueError('Contextual loss type undefined')
+
 		self.g_loss = self.g_loss_contextual + self.Lambda * self.g_loss_perceptual
 
 		self.d_variables = [variable for variable in tf.trainable_variables() if variable.name.startswith('d_')]
