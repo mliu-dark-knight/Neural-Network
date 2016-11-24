@@ -74,7 +74,7 @@ class DCGAN(object):
 
 		# check_scope()
 
-	def train(self, real_images, blurred_images, K=10, iteration=1000, report_iter=1):
+	def train(self, real_images, blurred_images, K=1, iteration=1000, report_iter=100, visualize_iter=100):
 		def generator_learning_rate(step):
 			return 1e-4 / (1 + step * 1e-4)
 
@@ -100,11 +100,12 @@ class DCGAN(object):
 			if i % report_iter == 0:
 				d_loss = self.tf_session.run(self.d_loss, feed_dict={self.real_images: batch_real_images, self.blurred_images: batch_blurred_images})
 				print('discriminator loss: %f' % d_loss)
-				# g_loss_contextual = self.tf_session.run(self.g_loss_contextual, feed_dict={self.real_images: batch_real_images, self.blurred_images: batch_blurred_images})
-				# print('generator contextual loss: %f' % (g_loss_contextual / self.batch_size))
+				g_loss_contextual = self.tf_session.run(self.g_loss_contextual, feed_dict={self.real_images: batch_real_images, self.blurred_images: batch_blurred_images})
+				print('generator contextual loss: %f' % (g_loss_contextual / self.batch_size))
 
-			if i % (report_iter * 10) == 0:
+			if i % visualize_iter == 0:
 				self.show_generated_image(blurred_images[np.random.randint(len(blurred_images), size=1)])
+		self.show_generated_image(blurred_images[np.random.randint(len(blurred_images), size=1)])
 
 	def show_generated_image(self, blurred_images):
 		generated_images = self.tf_session.run(self.generated_images, feed_dict={self.blurred_images: blurred_images})

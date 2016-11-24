@@ -46,8 +46,6 @@ class RNN(object):
         if self.lstm:
             self.cell = rnn_cell.BasicLSTMCell(self.n_unit, state_is_tuple=True)
         else:
-
-            # self.cell = rnn_cell.BasicRNNCell(self.n_unit, state_is_tuple=True)
             self.cell = rnn_cell.BasicRNNCell(self.n_unit)
         self.X = tf.placeholder(tf.float32, [None, self.n_step, self.n_input])
         self.Y = tf.placeholder(tf.float32, [None, self.n_class])
@@ -76,30 +74,32 @@ class RNN(object):
 
 def plot_convergence(curve,filename):
     plt.plot(curve)
-    plt.title(filename+' Accuracy Convergence')
+    plt.title(filename + ' Accuracy Convergence')
     plt.xlabel('Training Iteration')
     plt.ylabel('Training Corpus Accuracy')
-    plt.savefig(filename+'.png')  
+    plt.savefig(filename + '.png')  
     plt.close()
 
 def main():
-    # rnn = RNN(lstm=False, n_step=784, n_input=1)
-    # curve = rnn.fit()
-    # rnn.test()
-
-    rnn = RNN(lstm=False, n_step=28, n_input=28)
-    rnn.fit()
-    rnn.test()
-
-
-    # rnn = RNN(lstm=True, n_step=784, n_input=1)
-    # rnn.fit()
-    # rnn.test()
-
-    rnn = RNN(lstm=True, n_step=28, n_input=28)
+    rnn = RNN(lstm=False, n_step=784, n_input=1)
     curve = rnn.fit()
     rnn.test()
-    plot_convergence(curve,'lstm_28_28')
+    plot_convergence(curve, 'rnn_784_1')
+
+    # rnn = RNN(lstm=False, n_step=28, n_input=28)
+    # curve = rnn.fit(iterations=5000, report_iter=500)
+    # rnn.test()
+    # plot_convergence(curve, 'rnn_28_28')
+
+    rnn = RNN(lstm=True, n_step=784, n_input=1)
+    curve = rnn.fit(iterations=500, report_iter=50)
+    rnn.test()
+    plot_convergence(curve, 'lstm_784_1')
+
+    # rnn = RNN(lstm=True, n_step=28, n_input=28)
+    # curve = rnn.fit()
+    # rnn.test()
+    # plot_convergence(curve,'lstm_28_28')
 
 
 main()
