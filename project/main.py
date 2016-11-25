@@ -9,7 +9,7 @@ def mnist():
 	real_images = mnist.train.images.reshape(-1, 28, 28, 1)
 	blurred_images = np.array([blur(image) for image in real_images])
 	gan = DCGAN(Lambda=1e1, contextual='L1')
-	gan.train(real_images, blurred_images, K=10)
+	gan.train(real_images, blurred_images, K=10, report_iter=100, visualize_iter=100)
 
 def CelebA():
 	data = read_CelebA(sample_size=5500)
@@ -25,12 +25,12 @@ def read_CelebA(sample_size=55000):
 
 
 def blur(image):
-	return ndimage.gaussian_filter(image, sigma=(1, 1, 0), order=0)
+	return ndimage.gaussian_filter(image, sigma=(2, 2, 0), order=0)
 
 
 def main():
-	# mnist()
-	CelebA()
+	mnist()
+	# CelebA()
 
 
 main()
