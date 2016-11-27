@@ -6,7 +6,7 @@ import matplotlib.image as mpimg
 
 class DCGAN(object):
 	def __init__(self, image_height=28, image_width=28, image_color=1, batch_size=100, 
-				 g_kernel_size=4, g_channel_1=4, g_channel_2=8, g_channel_3=4,
+				 g_kernel_size=4, g_channel_1=8, g_channel_3=8,
 				 d_kernel_size=4, d_channel_1=4, d_channel_2=8, d_channel_3=16, d_channel_4=32,
 				 flatten_dim=128, hidden_dim=64, Lambda=1e1, contextual='L1'):
 
@@ -22,7 +22,6 @@ class DCGAN(object):
 		self.d_kernel_size = d_kernel_size
 
 		self.g_channel_1 = g_channel_1
-		self.g_channel_2 = g_channel_2
 		self.g_channel_3 = g_channel_3
 		self.d_channel_1 = d_channel_1
 		self.d_channel_2 = d_channel_2
@@ -115,7 +114,6 @@ class DCGAN(object):
 			if i % visualize_iter == 0:
 				show_idx = np.random.randint(len(blurred_images), size=1)
 				self.show_generated_image(real_images[show_idx], blurred_images[show_idx])
-		self.show_generated_image(blurred_images[np.random.randint(len(blurred_images), size=1)])
 
 	def show_generated_image(self, real_images, blurred_images):
 		generated_images = self.tf_session.run(self.generated_images, feed_dict={self.blurred_images: blurred_images})
@@ -170,17 +168,17 @@ class DCGAN(object):
 		b_1 = self.bias_variable([self.g_channel_1], name='g_b1')
 		h_1 = tf.nn.relu(tf.nn.conv2d(images, W_1, strides=[1, 1, 1 ,1], padding='SAME') + b_1)
 
-		W_2 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_1, self.g_channel_2], name='g_w2')
-		b_2 = self.bias_variable([self.g_channel_2], name='g_b2')
-		h_2 = tf.nn.relu(tf.nn.conv2d(h_1, W_2, strides=[1, 1, 1 ,1], padding='SAME') + b_2)
+		W_2 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_1, self.image_color], name='g_w2')
+		b_2 = self.bias_variable([self.image_color], name='g_b2')
+		h_2 = tf.nn.relu((tf.nn.conv2d(h_1, W_2, strides=[1, 1, 1 ,1], padding='SAME') + b_2) + images)
 
-		W_3 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_2, self.g_channel_3], name='g_w3')
+		W_3 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.image_color, self.g_channel_3], name='g_w3')
 		b_3 = self.bias_variable([self.g_channel_3], name='g_b3')
 		h_3 = tf.nn.relu(tf.nn.conv2d(h_2, W_3, strides=[1, 1, 1 ,1], padding='SAME') + b_3)
 
-		W_4 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_1, self.image_color], name='g_w4')
+		W_4 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_3, self.image_color], name='g_w4')
 		b_4 = self.bias_variable([self.image_color], name='g_b4')
-		h_4 = tf.nn.relu(tf.nn.conv2d(h_1, W_4, strides=[1, 1, 1 ,1], padding='SAME') + b_4)	
+		h_4 = tf.nn.relu((tf.nn.conv2d(h_3, W_4, strides=[1, 1, 1 ,1], padding='SAME') + b_4) + images)
 
 		return h_4
 
