@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import numpy.linalg as LA
 
 
 class DCGAN(object):
@@ -117,16 +118,25 @@ class DCGAN(object):
 
 	def show_generated_image(self, real_images, blurred_images):
 		generated_images = self.tf_session.run(self.generated_images, feed_dict={self.blurred_images: blurred_images})
+		if self.image_color != 1:
+			generated_images = generated_images.astype(np.uint8)
 		for i in range(len(generated_images)):
 			if self.image_color == 1:
 				plt.matshow(np.squeeze(real_images[i]), cmap=plt.cm.gray)
 				plt.matshow(np.squeeze(blurred_images[i]), cmap=plt.cm.gray)
 				plt.matshow(np.squeeze(generated_images[i]), cmap=plt.cm.gray)
+				plt.show()
 			else:
+				print('L2 norm between real image and blurred image %d' % LA.norm(np.reshape(real_images[i] - blurred_images[i], (-1, 1)), 1))
+				print('L2 norm between blurred image and generated image %d' % LA.norm(np.reshape(blurred_images[i] - generated_images[i], (-1, 1)), 1))
+				print('L2 norm between generated image and real image %d' % LA.norm(np.reshape(generated_images[i] - real_images[i], (-1, 1)), 1))
 				plt.imshow(real_images[i])
+				plt.show()
 				plt.imshow(blurred_images[i])
+				plt.show()
 				plt.imshow(generated_images[i])
-			plt.show()
+				plt.show()
+			
 
 	def print_variables(self, names=None):
 		for name in names:
