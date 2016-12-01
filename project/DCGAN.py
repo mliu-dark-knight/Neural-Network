@@ -188,7 +188,7 @@ class DCGAN(object):
 
 		W_4 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_3, self.image_color], name='g_w4')
 		b_4 = self.bias_variable([self.image_color], name='g_b4')
-		h_4 = tf.nn.relu((tf.nn.conv2d(h_3, W_4, strides=[1, 1, 1 ,1], padding='SAME') + b_4) + images)
+		h_4 = tf.nn.relu((tf.nn.conv2d(h_3, W_4, strides=[1, 1, 1 ,1], padding='SAME') + b_4) + h_2)
 
 		return h_4
 
