@@ -7,7 +7,7 @@ import numpy.linalg as LA
 
 class DCGAN(object):
 	def __init__(self, image_height=28, image_width=28, image_color=1, batch_size=100, 
-				 g_kernel_size=4, g_channel_1=8, g_channel_3=8,
+				 g_kernel_size=4, g_channel_1=16, g_channel_2=16, g_channel_3=16,
 				 d_kernel_size=4, d_channel_1=4, d_channel_2=8, d_channel_3=16, d_channel_4=32,
 				 flatten_dim=128, hidden_dim=64, Lambda=1e1, contextual='L1'):
 
@@ -23,6 +23,7 @@ class DCGAN(object):
 		self.d_kernel_size = d_kernel_size
 
 		self.g_channel_1 = g_channel_1
+		self.g_channel_2 = g_channel_2
 		self.g_channel_3 = g_channel_3
 		self.d_channel_1 = d_channel_1
 		self.d_channel_2 = d_channel_2
@@ -115,6 +116,7 @@ class DCGAN(object):
 			if i % visualize_iter == 0:
 				show_idx = np.random.randint(len(blurred_images), size=1)
 				self.show_generated_image(real_images[show_idx], blurred_images[show_idx])
+				# self.print_variables(names=['g_w1', 'g_w2', 'g_w3', 'g_w4'])
 
 	def show_generated_image(self, real_images, blurred_images):
 		generated_images = self.tf_session.run(self.generated_images, feed_dict={self.blurred_images: blurred_images})
@@ -127,9 +129,9 @@ class DCGAN(object):
 				plt.matshow(np.squeeze(generated_images[i]), cmap=plt.cm.gray)
 				plt.show()
 			else:
-				print('L2 norm between real image and blurred image %d' % LA.norm(np.reshape(real_images[i] - blurred_images[i], (-1, 1)), 1))
-				print('L2 norm between blurred image and generated image %d' % LA.norm(np.reshape(blurred_images[i] - generated_images[i], (-1, 1)), 1))
-				print('L2 norm between generated image and real image %d' % LA.norm(np.reshape(generated_images[i] - real_images[i], (-1, 1)), 1))
+				# print('L2 norm between real image and blurred image %d' % LA.norm(np.reshape(real_images[i] - blurred_images[i], (-1, 1)), 1))
+				# print('L2 norm between blurred image and generated image %d' % LA.norm(np.reshape(blurred_images[i] - generated_images[i], (-1, 1)), 1))
+				# print('L2 norm between generated image and real image %d' % LA.norm(np.reshape(generated_images[i] - real_images[i], (-1, 1)), 1))
 				plt.imshow(real_images[i])
 				plt.show()
 				plt.imshow(blurred_images[i])
@@ -178,17 +180,17 @@ class DCGAN(object):
 		b_1 = self.bias_variable([self.g_channel_1], name='g_b1')
 		h_1 = tf.nn.relu(tf.nn.conv2d(images, W_1, strides=[1, 1, 1 ,1], padding='SAME') + b_1)
 
-		W_2 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_1, self.image_color], name='g_w2')
-		b_2 = self.bias_variable([self.image_color], name='g_b2')
-		h_2 = tf.nn.relu((tf.nn.conv2d(h_1, W_2, strides=[1, 1, 1 ,1], padding='SAME') + b_2) + images)
+		W_2 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_1, self.g_channel_2], name='g_w2')
+		b_2 = self.bias_variable([self.g_channel_2], name='g_b2')
+		h_2 = tf.nn.relu(tf.nn.conv2d(h_1, W_2, strides=[1, 1, 1 ,1], padding='SAME') + b_2)
 
-		W_3 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.image_color, self.g_channel_3], name='g_w3')
+		W_3 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_2, self.g_channel_3], name='g_w3')
 		b_3 = self.bias_variable([self.g_channel_3], name='g_b3')
-		h_3 = tf.nn.relu(tf.nn.conv2d(h_2, W_3, strides=[1, 1, 1 ,1], padding='SAME') + b_3)
+		h_3 = tf.nn.relu((tf.nn.conv2d(h_2, W_3, strides=[1, 1, 1 ,1], padding='SAME') + b_3) + h_1)
 
 		W_4 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_3, self.image_color], name='g_w4')
 		b_4 = self.bias_variable([self.image_color], name='g_b4')
-		h_4 = tf.nn.relu((tf.nn.conv2d(h_3, W_4, strides=[1, 1, 1 ,1], padding='SAME') + b_4) + h_2)
+		h_4 = tf.nn.relu((tf.nn.conv2d(h_3, W_4, strides=[1, 1, 1 ,1], padding='SAME') + b_4) + images)
 
 		return h_4
 

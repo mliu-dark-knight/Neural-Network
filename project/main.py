@@ -15,7 +15,7 @@ def CelebA():
 	real_images = read_CelebA(sample_size=550)
 	blurred_images = np.array([blur(image, 4) for image in real_images])
 	gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=100, flatten_dim=14 * 12 * 32, Lambda=1e1, contextual='L1')
-	gan.train(real_images, blurred_images, report_iter=10, visualize_iter=10)
+	gan.train(real_images, blurred_images, report_iter=1, visualize_iter=10)
 
 def read_CelebA(sample_size=55000):
 	sample_idx = np.random.choice(202598, sample_size, replace=False)
