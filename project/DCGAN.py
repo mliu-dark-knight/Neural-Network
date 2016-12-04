@@ -6,7 +6,7 @@ import numpy.linalg as LA
 
 
 class DCGAN(object):
-	def __init__(self, image_height=28, image_width=28, image_color=1, batch_size=100, 
+	def __init__(self, image_height=28, image_width=28, image_color=1, batch_size=10, 
 				 g_kernel_size=4, g_channel_1=16, g_channel_2=16, g_channel_3=16,
 				 d_kernel_size=4, d_channel_1=4, d_channel_2=8, d_channel_3=16, d_channel_4=32,
 				 flatten_dim=128, hidden_dim=64, Lambda=1e1, contextual='L1'):
@@ -121,6 +121,7 @@ class DCGAN(object):
 	def show_generated_image(self, real_images, blurred_images):
 		generated_images = self.tf_session.run(self.generated_images, feed_dict={self.blurred_images: blurred_images})
 		if self.image_color != 1:
+			blurred_images = blurred_images.astype(np.uint8)
 			generated_images = generated_images.astype(np.uint8)
 		for i in range(len(generated_images)):
 			if self.image_color == 1:
