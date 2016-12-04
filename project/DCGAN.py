@@ -118,6 +118,9 @@ class DCGAN(object):
 				self.show_generated_image(real_images[show_idx], blurred_images[show_idx])
 				# self.print_variables(names=['g_w1', 'g_w2', 'g_w3', 'g_w4'])
 
+		show_idx = np.random.randint(len(blurred_images), size=10)
+		self.show_generated_image(real_images[show_idx], blurred_images[show_idx])
+
 	def show_generated_image(self, real_images, blurred_images):
 		generated_images = self.tf_session.run(self.generated_images, feed_dict={self.blurred_images: blurred_images})
 		if self.image_color != 1:
