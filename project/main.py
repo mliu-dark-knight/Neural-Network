@@ -13,12 +13,30 @@ def mnist():
 	gan.train(real_images, blurred_images, K=10, report_iter=100, visualize_iter=100)
 
 def CelebA():
-	real_images = read_CelebA(sample_size=5500)
+	real_images = read_CelebA(sample_size=550)
 	# blurred_images = np.array([blur(image, 4) for image in real_images])
 	masked_images = np.array([mask(image) for image in real_images])
 	gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, flatten_dim=14 * 12 * 32, Lambda=1e2, contextual='L1')
 	# gan.train(real_images, blurred_images, report_iter=100, visualize_iter=100)
-	gan.train(real_images, masked_images, report_iter=100, visualize_iter=100)
+	gan.train(real_images, masked_images, iteration=2000, report_iter=1000, visualize_iter=1000)
+
+	sample_idx = np.random.randint(len(masked_images), size=10)
+	generated_images = gan.reconstruct_image(masked_images[sample_idx])
+	save_images(real_images[sample_idx], masked_images[sample_idx].astype(np.uint8), generated_images.astype(np.uint8), 'result/CelebA', 'masked')
+
+
+def save_images(real_images, blurred_images, generated_images, prefix, type):
+	for i in range(len(real_images)):
+		plt.imshow(real_images[i])
+		plt.axis('off')
+		plt.savefig(prefix + '_real_' + str(i) + '.png', bbox_inches='tight')
+		plt.imshow(blurred_images[i])
+		plt.axis('off')
+		plt.savefig(prefix + '_' + type + '_' + str(i) + '.png', bbox_inches='tight')
+		plt.imshow(generated_images[i])
+		plt.axis('off')
+		plt.savefig(prefix + '_generated_' + str(i) + '.png', bbox_inches='tight')
+
 
 def read_CelebA(sample_size=55000):
 	sample_idx = np.random.choice(202598, sample_size, replace=False)
