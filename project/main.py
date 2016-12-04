@@ -14,18 +14,22 @@ def mnist():
 
 def CelebA():
 	real_images = read_CelebA(sample_size=5500)
+
 	# blurred_images = np.array([blur(image, 4) for image in real_images])
+	# blur_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, flatten_dim=14 * 12 * 32, Lambda=1e2, contextual='L1')
+	# blur_gan.train(real_images, blurred_images, report_iter=100, visualize_iter=100)
+
 	# masked_images = np.array([mask(image) for image in real_images])
-	down_sampled_images = np.array([down_sample(image, 2) for image in real_images])
-
-	gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, flatten_dim=14 * 12 * 32, Lambda=1e2, contextual='L1')
-	# gan.train(real_images, blurred_images, report_iter=100, visualize_iter=100)
-	# gan.train(real_images, masked_images, iteration=2000, report_iter=2000, visualize_iter=2000)
-	gan.train(real_images, down_sampled_images, report_iter=100, visualize_iter=100)
-
+	# mask_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, flatten_dim=14 * 12 * 32, Lambda=1e2, contextual='L1')
+	# mask_gan.train(real_images, masked_images, iterations=2000, report_iter=2000, visualize_iter=2000)
 	# sample_idx = np.random.randint(len(masked_images), size=10)
-	# generated_images = gan.reconstruct_image(masked_images[sample_idx])
+	# generated_images = mask_gan.reconstruct_image(masked_images[sample_idx])
 	# save_images(real_images[sample_idx], masked_images[sample_idx].astype(np.uint8), generated_images.astype(np.uint8), 'result/CelebA', 'masked')
+
+	down_sampled_images = np.array([down_sample(image, 2) for image in real_images])
+	down_sample_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, flatten_dim=14 * 12 * 32, hidden_dim=256, Lambda=1e2, contextual='L1')
+	down_sample_gan.train(real_images, down_sampled_images, report_iter=10, visualize_iter=100)
+
 
 
 def save_images(real_images, blurred_images, generated_images, prefix, type):
@@ -58,9 +62,9 @@ def mask(image):
 	return np.multiply(image, mask)
 
 def down_sample(image, factor):
-	down_sampled_image = image[::factor, ::factor, :]
-	return np.repeat(np.repeat(down_sampled_image, factor, axis=0), factor, axis=1)
-
+	shape = image.shape
+	down_sampled_image = np.repeat(np.repeat(image[::factor, ::factor, :], factor, axis=0), factor, axis=1)
+	return down_sampled_image[:shape[0], :shape[1], :]
 
 def main():
 	# mnist()

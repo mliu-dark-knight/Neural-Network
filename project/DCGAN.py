@@ -98,7 +98,7 @@ class DCGAN(object):
 			batch_idx = np.random.choice(len(real_images), self.batch_size, replace=False)
 			batch_real_images, batch_blurred_images = real_images[batch_idx], blurred_images[batch_idx]
 			for k in range(K):
-				self.tf_session.run(self.d_gradient_descent, feed_dict={self.real_images: batch_real_images, self.blurred_images: batch_blurred_images, self.learning_rate: discriminator_learning_rate(i)})
+				self.tf_session.run(self.d_gradient_descent, feed_dict={self.real_images: batch_real_images, self.blurred_images: batch_blurred_images, self.learning_rate: discriminator_learning_rate(i * K + k)})
 
 			# discriminator loss before updating generator
 			if i % report_iter == 0:
@@ -112,11 +112,11 @@ class DCGAN(object):
 				print('discriminator loss: %f' % d_loss)
 				g_loss_contextual = self.tf_session.run(self.g_loss_contextual, feed_dict={self.real_images: batch_real_images, self.blurred_images: batch_blurred_images})
 				print('generator contextual loss: %f' % (g_loss_contextual / self.batch_size))
+				# self.print_variables(names=['g_w1', 'g_w2', 'g_w3', 'g_w4'])
 
 			if i % visualize_iter == 0:
 				show_idx = np.random.randint(len(blurred_images), size=1)
 				self.show_generated_image(real_images[show_idx], blurred_images[show_idx])
-				# self.print_variables(names=['g_w1', 'g_w2', 'g_w3', 'g_w4'])
 
 	def show_generated_image(self, real_images, blurred_images):
 		generated_images = self.reconstruct_image(blurred_images)
