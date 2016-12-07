@@ -6,12 +6,13 @@ import numpy.linalg as LA
 
 
 class DCGAN(object):
-	def __init__(self, image_height=28, image_width=28, image_color=1, batch_size=10, 
+	def __init__(self, image_height=28, image_width=28, image_color=1, batch_size=10, stddev=1e-1,
 				 g_kernel_size=4, g_channel_1=16, g_channel_2=16, g_channel_3=16,
 				 d_kernel_size=4, d_channel_1=4, d_channel_2=8, d_channel_3=16, d_channel_4=32,
 				 flatten_dim=128, hidden_dim=64, Lambda=1e1, contextual='L1'):
 
 		self.batch_size = batch_size
+		self.stddev = stddev
 		self.image_height = image_height
 		self.image_width = image_width
 		self.image_color = image_color
@@ -37,14 +38,14 @@ class DCGAN(object):
 	def weight_variable(self, shape, name=None, reuse=False):
 		if reuse:
 			with tf.variable_scope('', reuse=True):
-				return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=0.0, stddev=1e-1))
-		return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=0.0, stddev=1e-1))
+				return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=0.0, stddev=self.stddev))
+		return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=0.0, stddev=self.stddev))
 
 	def bias_variable(self, shape, name=None, reuse=False):
 		if reuse:
 			with tf.variable_scope('', reuse=True):
-				return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=1e-1, stddev=1e-1))
-		return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=1e-1, stddev=1e-1))
+				return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=1e-1, stddev=self.stddev))
+		return tf.get_variable(name=name, shape=shape, initializer=tf.random_normal_initializer(mean=1e-1, stddev=self.stddev))
 
 
 	def build_model(self):
@@ -75,8 +76,8 @@ class DCGAN(object):
 
 		self.learning_rate = tf.placeholder(tf.float32, shape=[])
 
-		self.d_gradient_descent = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate).minimize(self.d_loss, var_list=self.d_variables)
-		self.g_gradient_descent = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate).minimize(self.g_loss, var_list=self.g_variables)
+		self.d_gradient_descent = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.d_loss, var_list=self.d_variables)
+		self.g_gradient_descent = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.g_loss, var_list=self.g_variables)
 
 		def check_scope():
 			for variable in tf.trainable_variables():
@@ -84,9 +85,9 @@ class DCGAN(object):
 
 		# check_scope()
 
-	def train(self, real_images, blurred_images, K=1, iteration=1000, report_iter=100, visualize_iter=100):
+	def train(self, real_images, blurred_images, K=1, alpha=1e-4, iteration=1000, report_iter=100, visualize_iter=100):
 		def generator_learning_rate(step):
-			return 1e-4 / (1 + step * 1e-4)
+			return alpha / (1 + step * 1e-4)
 
 		def discriminator_learning_rate(step):
 			return 1e-2 / (1 + step * 1e-4)

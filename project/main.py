@@ -10,26 +10,29 @@ def mnist():
 	real_images = mnist.train.images.reshape(-1, 28, 28, 1)
 	blurred_images = np.array([blur(image, 2) for image in real_images])
 	gan = DCGAN(batch_size=100, Lambda=1e1, contextual='L1')
-	gan.train(real_images, blurred_images, K=10, report_iter=100, visualize_iter=100)
+	gan.train(real_images, blurred_images, report_iter=100, visualize_iter=100)
+	sample_idx = np.random.randint(len(blurred_images), size=10)
+	generated_images = gan.reconstruct_image(blurred_images[sample_idx])
+	save_grayscale(real_images[sample_idx], blurred_images[sample_idx], generated_images, 'result/mnist')
+
 
 def CelebA():
-	real_images = read_CelebA(sample_size=5500)
+	real_images = read_CelebA(sample_size=10000)
 
-	# blurred_images = np.array([blur(image, 4) for image in real_images])
-	# blur_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, flatten_dim=14 * 12 * 32, Lambda=1e2, contextual='L1')
-	# blur_gan.train(real_images, blurred_images, report_iter=100, visualize_iter=100)
+	blurred_images = np.array([blur(image, 4) for image in real_images])
+	blur_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, g_kernel_size=8, d_kernel_size=8, flatten_dim=14 * 12 * 32, hidden_dim=256, Lambda=1e1, contextual='L1')
+	blur_gan.train(real_images, blurred_images, report_iter=10, visualize_iter=10)
 
-	# masked_images = np.array([mask(image) for image in real_images])
-	# mask_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, flatten_dim=14 * 12 * 32, Lambda=1e2, contextual='L1')
-	# mask_gan.train(real_images, masked_images, iterations=2000, report_iter=2000, visualize_iter=2000)
-	# sample_idx = np.random.randint(len(masked_images), size=10)
-	# generated_images = mask_gan.reconstruct_image(masked_images[sample_idx])
-	# save_images(real_images[sample_idx], masked_images[sample_idx].astype(np.uint8), generated_images.astype(np.uint8), 'result/CelebA', 'masked')
+	masked_images = np.array([mask(image) for image in real_images])
+	mask_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, flatten_dim=14 * 12 * 32, Lambda=1e2, contextual='L1')
+	mask_gan.train(real_images, masked_images, iteration=10000, report_iter=1000, visualize_iter=10000)
+	sample_idx = np.random.randint(len(masked_images), size=10)
+	generated_images = mask_gan.reconstruct_image(masked_images[sample_idx])
+	save_images(real_images[sample_idx], masked_images[sample_idx].astype(np.uint8), generated_images.astype(np.uint8), 'result/CelebA', 'masked')
 
 	down_sampled_images = np.array([down_sample(image, 2) for image in real_images])
-	down_sample_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, flatten_dim=14 * 12 * 32, hidden_dim=256, Lambda=1e2, contextual='L1')
-	down_sample_gan.train(real_images, down_sampled_images, report_iter=10, visualize_iter=100)
-
+	down_sample_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, stddev=1e-2, g_kernel_size=8, flatten_dim=14 * 12 * 32, hidden_dim=256, Lambda=1e-1, contextual='L1')
+	down_sample_gan.train(real_images, down_sampled_images, alpha=1e-2, report_iter=100, visualize_iter=1000)
 
 
 def save_images(real_images, blurred_images, generated_images, prefix, type):
@@ -45,7 +48,20 @@ def save_images(real_images, blurred_images, generated_images, prefix, type):
 		plt.savefig(prefix + '_generated_' + str(i) + '.png', bbox_inches='tight')
 
 
-def read_CelebA(sample_size=55000):
+def save_grayscale(real_images, blurred_images, generated_images, prefix):
+	for i in range(len(real_images)):
+		plt.matshow(np.squeeze(real_images[i]), cmap=plt.cm.gray)
+		plt.axis('off')
+		plt.savefig(prefix + '_real_' + str(i) + '.png', bbox_inches='tight')
+		plt.matshow(np.squeeze(blurred_images[i]), cmap=plt.cm.gray)
+		plt.axis('off')
+		plt.savefig(prefix + '_blurred_' + str(i) + '.png', bbox_inches='tight')
+		plt.matshow(np.squeeze(generated_images[i]), cmap=plt.cm.gray)
+		plt.axis('off')
+		plt.savefig(prefix + '_generated_' + str(i) + '.png', bbox_inches='tight')
+
+
+def read_CelebA(sample_size=10000):
 	sample_idx = np.random.choice(202598, sample_size, replace=False)
 	sample = []
 	for idx in sample_idx:
