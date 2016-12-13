@@ -17,11 +17,11 @@ def mnist():
 
 
 def CelebA():
-	real_images = read_CelebA(sample_size=10000)
+	real_images = read_CelebA(sample_size=1000)
 
 	blurred_images = np.array([blur(image, 4) for image in real_images])
 	blur_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, g_kernel_size=8, d_kernel_size=8, flatten_dim=14 * 12 * 32, hidden_dim=256, Lambda=1e1, contextual='L1')
-	blur_gan.train(real_images, blurred_images, report_iter=10, visualize_iter=10)
+	blur_gan.train(real_images, blurred_images, report_iter=100, visualize_iter=100)
 
 	masked_images = np.array([mask(image) for image in real_images])
 	mask_gan = DCGAN(image_height=218, image_width=178, image_color=3, batch_size=10, flatten_dim=14 * 12 * 32, Lambda=1e2, contextual='L1')
@@ -83,7 +83,7 @@ def down_sample(image, factor):
 	return down_sampled_image[:shape[0], :shape[1], :]
 
 def main():
-	# mnist()
+	mnist()
 	CelebA()
 
 

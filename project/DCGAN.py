@@ -93,7 +93,7 @@ class DCGAN(object):
 			return 1e-2 / (1 + step * 1e-4)
 
 		self.tf_session = tf.Session()
-		self.tf_session.run(tf.initialize_all_variables())
+		self.tf_session.run(tf.global_variables_initializer())
 
 		for i in range(iteration):
 			batch_idx = np.random.choice(len(real_images), self.batch_size, replace=False)
