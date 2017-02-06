@@ -187,7 +187,9 @@ class DCGAN(object):
 
 		W_2 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_1, self.g_channel_2], name='g_w2')
 		b_2 = self.bias_variable([self.g_channel_2], name='g_b2')
-		h_2 = tf.nn.relu(tf.nn.conv2d(h_1, W_2, strides=[1, 1, 1 ,1], padding='SAME') + b_2)
+		conv_2 = tf.nn.conv2d(h_1, W_2, strides=[1, 1, 1 ,1], padding='SAME') + b_2
+		mean_2, var_2 = tf.nn.moments(conv_2, axes=[0])
+		h_2 = tf.nn.relu(tf.nn.batch_normalization(conv_2, mean_2, var_2, offset=None, scale=None, variance_epsilon=1e-2))
 
 		W_3 = self.weight_variable([self.g_kernel_size, self.g_kernel_size, self.g_channel_2, self.g_channel_3], name='g_w3')
 		b_3 = self.bias_variable([self.g_channel_3], name='g_b3')
